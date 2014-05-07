@@ -1415,6 +1415,9 @@ def cleanup():
         for view in gdb_views:
             view.close()
     if get_setting("push_pop_layout", True):
+        if gdb_input_view:
+            sublime.active_window().run_command("hide_panel", {"cancel": True})
+
         gdb_bkp_window.set_layout(gdb_bkp_layout)
         gdb_bkp_window.focus_view(gdb_bkp_view)
     if __debug_file_handle is not None:
@@ -1597,11 +1600,14 @@ class GdbLaunch(sublime_plugin.WindowCommand):
                                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             log_debug("Process: %s\n" % gdb_process)
-            gdb_bkp_window = sublime.active_window()
-            #back up current layout before opening the debug one
-            #it will be restored when debug is finished
-            gdb_bkp_layout = gdb_bkp_window.get_layout()
-            gdb_bkp_view = gdb_bkp_window.active_view()
+
+            if not gdb_bkp_window:
+                #back up current layout before opening the debug one
+                #it will be restored when debug is finished
+                gdb_bkp_window = sublime.active_window()
+                gdb_bkp_layout = gdb_bkp_window.get_layout()
+                gdb_bkp_view = gdb_bkp_window.active_view()
+
             gdb_bkp_window.set_layout(
                 get_setting("layout",
                     {
@@ -1700,6 +1706,24 @@ class GdbExit(sublime_plugin.WindowCommand):
 
     def is_visible(self):
         return is_running()
+
+
+class GdbCleanup(sublime_plugin.WindowCommand):
+    def run(self):
+        for view in gdb_views:
+            view.close()
+        
+        if gdb_input_view:
+            sublime.active_window().run_command("hide_panel", {"cancel": True})
+
+        gdb_bkp_window.set_layout(gdb_bkp_layout)
+        gdb_bkp_window.focus_view(gdb_bkp_view)
+
+    def is_enabled(self):
+        return not is_running()
+
+    def is_visible(self):
+        return not is_running()
 
 
 class GdbPause(sublime_plugin.WindowCommand):

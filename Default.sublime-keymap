@@ -39,6 +39,11 @@
         "keys": ["ctrl+f5"]
     },
     {
+        "command": "gdb_cleanup",
+        "context": [{"key": "gdb_running", "operator": "equal", "operand": false}],
+        "keys": ["ctrl+f5"]
+    },
+    {
         "command": "gdb_continue",
         "context": [{"key": "gdb_running", "operator": "equal", "operand": true}],
         "keys": ["f5"]
