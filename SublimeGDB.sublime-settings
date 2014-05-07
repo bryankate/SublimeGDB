@@ -8,7 +8,6 @@
     //      "sublimegdb_workingdir": "${folder:${project_path:your_executable_name}}",
     //      // NOTE: You MUST provide --interpreter=mi for the plugin to work
     //      "sublimegdb_commandline": "gdb --interpreter=mi ./your_executable_name"
-    //      ]
     // }
     //
     // ${home}, ${project_path:} and ${folder:} tokens can be used in the workingdir option.
@@ -33,6 +32,9 @@
     // If you are attaching to a remote program, you
     // probably want to change this to -exec-continue
     "exec_cmd": "-exec-run",
+
+    // The arguments to pass to the executable. 
+    "exec_args": "notset",
 
     // For the larger binaries with lot of shared libraries
     // the loading within the gdb could take much longer.
