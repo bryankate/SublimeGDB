@@ -790,10 +790,14 @@ class GDBCallstackView(GDBView):
         global gdb_cursor_position
         line = run_cmd("-stack-list-frames", True)
         if get_result(line) == "error":
+            line = line[line.index("error,") + 6:]
+        pline = parse_result_line(line)
+        # proceed on error if there is a stack in the GDB response
+        if "stack" not in pline:
             gdb_cursor_position = 0
             update_view_markers()
             return
-        frames = listify(parse_result_line(line)["stack"]["frame"])
+        frames = listify(pline["stack"]["frame"])
         args = listify(parse_result_line(run_cmd("-stack-list-arguments 1", True))["stack-args"]["frame"])
         pos = self.get_view().viewport_position()
         self.clear()
@@ -865,7 +869,9 @@ class GDBThreadsView(GDBView):
             if "thread-ids" in ids and "thread-id" in ids["thread-ids"]:
                 self.threads = [GDBThread(int(id)) for id in ids["thread-ids"]["thread-id"]]
                 if "threads" in ids and "thread" in ids["threads"]:
-                    for thread in ids["threads"]["thread"]:
+                    threads = [ids["threads"]] if type(ids["threads"]) is dict else ids["threads"]
+                    for t in threads:
+                        thread = t["thread"]
                         if "thread-id" in thread and "state" in thread:
                             tid = int(thread["thread-id"])
                             for t2 in self.threads:
@@ -879,7 +885,8 @@ class GDBThreadsView(GDBView):
         else:
             l = parse_result_line(res)
             self.threads = []
-            for thread in l["threads"]:
+            threads = [l["threads"]] if type(l["threads"]) is dict else l["threads"]
+            for thread in threads:
                 func = "???"
                 if "frame" in thread and "func" in thread["frame"]:
                     func = thread["frame"]["func"]
